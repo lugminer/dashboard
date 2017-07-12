@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            body {
+    font-family: "helvetica";
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even){background-color: #f2f2f2}
+
+button {
+    margin: 0 7px 0 0;
+    background-color: #f5f5f5;
+    border: 1px solid #dedede;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+
+    font-size: 12px;
+    line-height: 130%;
+    text-decoration: none;
+    font-weight: bold;
+    color: #565656;
+    cursor: pointer;
+}
+
+.box {
+    width: 200px;
+    height: 200px;
+    margin: 40px;
+    float: left;
+    text-align: center;
+    border: #969696 solid thin;
+    padding: 5px;
+}
+
+.red {
+    background-color: #e9967a;
+    color: #f0f8ff;
+}
+
+.blue {
+    background-color: #add8e6;
+    color: #f0f8ff;
+}
+
+.cell {
+    min-width: 40px;
+    min-height: 20px;
+    margin: 5px;
+    float: left;
+    text-align: center;
+    border: #969696 solid thin;
+    padding: 5px;
+}
+
+.fixed-cell {
+    min-width: 40px;
+    min-height: 20px;
+    margin: 5px;
+    position: fixed;
+    text-align: center;
+    border: #969696 solid thin;
+    padding: 5px;
+}
+
+.h-bar {
+    min-height: 15px;
+    min-width: 10px;
+    background-color: steelblue;
+    margin-bottom: 2px;
+    font-size: 11px;
+    color: #f0f8ff;
+    text-align: right;
+    padding-right: 2px;
+}
+
+.v-bar {
+    min-height: 1px;
+    min-width: 30px;
+    background-color: #4682b4;
+    margin-right: 2px;
+    font-size: 10px;
+    color: #f0f8ff;
+    text-align: center;
+    width: 10px;
+    display: inline-block;
+}
+
+.baseline {
+    height: 1px;
+    background-color: black;
+}
+
+.clear {
+    clear: both;
+}
+
+.selected {
+    background-color: #f08080;
+}
+
+.control-group {
+    padding-top: 10px;
+    margin: 10px;
+}
+
+.table {
+    width: 70%;
+}
+
+.table td, th {
+    padding: 5px;
+}
+
+.table-header {
+    background-color: #00AFEF;
+    font-weight: bold;
+}
+
+.table-row-odd {
+    background-color: #f0f8ff;
+}
+
+.table-row-odd {
+    background-color: #d3d3d3;
+}
+
+.code {
+    display: inline-block;
+    font-style: italic;
+    background-color: #d3d3d3;
+    border: #969696 solid thin;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.countdown{
+    width: 150px;
+    height: 150px;
+    font-size: 5em;
+    font-weight: bold;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font: 10px sans-serif;
+}
+
+.axis .grid-line{
+    stroke: black;
+    shape-rendering: crispEdges;
+    stroke-opacity: .2;
+}
+
+.line{
+    fill: none;    
+    stroke: steelblue;
+    stroke-width: 2;
+}
+
+.dot {
+  fill: #fff;
+  stroke: steelblue;
+}
+
+.area {
+    stroke: none;
+    fill: steelblue;
+    fill-opacity: .2;
+}
+
+.pie text{
+    fill: white;
+    font-weight: bold;
+}
+
+.circle {
+    stroke: none;
+    fill: red;
+    fill-opacity: .7;
+}
+
+.cross {
+    stroke: none;
+    fill: blue;
+    fill-opacity: .7;
+}
+
+.diamond {
+    stroke: none;
+    fill: green;
+    fill-opacity: .7;
+}
+
+.square{
+    stroke: none;
+    fill: yellow;
+    fill-opacity: .7;
+}
+
+.triangle-down{
+    stroke: none;
+    fill: blueviolet;
+    fill-opacity: .7;
+}
+
+.triangle-up{
+    stroke: none;
+    fill: darkred;
+    fill-opacity: .7;
+}
+
+.bubble{
+    fill-opacity: .3;
+}
+
+.bar{
+    stroke: none;
+    fill: steelblue;
+}
+
+.arc text {
+  font: 15px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+        </style>
+    </head>
+    <body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript">
+d3.csv('stocks.csv', function(err, data){
+  if(err) throw err;
+  data = d3.nest()
+    .key(function(d){ return d.date; }) // `GROUP BY date`
+    .rollup(function(values){
+      // `values` is all the rows of a particular date
+      var counts = {}, keys = ['milisec'];
+      keys.forEach(function(key){
+        counts[key] = d3.sum(values, function(d){ return d[key]; });
+      });
+      return counts;
+    })
+    .entries(data);
+   alert(JSON.stringify(data));
+   
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+<div style="overflow-x:auto;" id="result" align="right"></div>
+<script type="text/javascript">
+d3.csv('stocks.csv', function(err, data){
+  if(err) throw err;
+  data = d3.nest()
+    .key(function(d){ return d.page; }) // `GROUP BY date`
+    .rollup(function(values){
+      // `values` is all the rows of a particular date
+      var counts = {}, keys = ['milisec'];
+      keys.forEach(function(key){
+        counts[key] = d3.sum(values, function(d){ return d[key]; });
+      });
+      return counts;
+    })
+    .entries(data);
+   alert(JSON.stringify(data));
+
+function convertMS(d) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+
+    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+    return hDisplay + mDisplay + sDisplay; 
+};
+   // d3.select("#result").text(JSON.stringify(data));
+   var table = d3.select("#result").append("table");
+      thead = table.append("thead");
+      tbody = table.append("tbody");
+
+  thead.append("th").text("Page");
+  thead.append("th").text("Duration");
+  thead.append("th").text("");
+
+  var tr = tbody.selectAll("tr")
+      .data(data)
+      .enter().append("tr");
+
+  var td = tr.selectAll("td")
+        .data(function(d) { return [d.key, JSON.stringify(convertMS(d.values.milisec))]; })
+      .enter().append("td")
+        .text(function(d) { return d; });
+  })();
+
+</script>
+<p></p>
+<div id="datatable" align="down"></div>
+
+<script type="text/javascript">
+    
+    var data = [];
+ d3.csv("stocks.csv", function(err, data){
+  if(err) throw err;
+  data = d3.nest()
+    .key(function(d){ return d.date; }) // `GROUP BY date`
+    .rollup(function(values){
+      // `values` is all the rows of a particular date
+      var counts = {}, keys = ['milisec'];
+      keys.forEach(function(key){
+        counts[key] = d3.sum(values, function(d){ return d[key]; });
+      });
+      return counts;
+    })
+    .entries(data);
+alert(JSON.stringify(data));
+function convertMS(d) {
+    d = Number(d);
+    var h = Math.floor(d / 3600);
+    var m = Math.floor(d % 3600 / 60);
+    var s = Math.floor(d % 3600 % 60);
+
+    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+    return hDisplay + mDisplay + sDisplay; 
+};
+  var table = d3.select("#datatable").append("table");
+      thead = table.append("thead");
+      tbody = table.append("tbody");
+
+  thead.append("th").text("Date");
+  thead.append("th").text("Duration");
+  thead.append("th").text("");
+
+  var tr = tbody.selectAll("tr")
+      .data(data)
+      .enter().append("tr");
+
+  var td = tr.selectAll("td")
+        .data(function(d) { return [d.key, JSON.stringify(convertMS(d.values.milisec))]; })
+      .enter().append("td")
+        .text(function(d) { return d; });
+
+});
+</script>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+// set the dimensions of the canvas
+function whichButton(buttonElement){
+    
+var margin = {top: 20, right: 20, bottom: 70, left: 40},
+    width = 600 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+
+// set the ranges
+var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+var y = d3.scale.linear().range([height, 0]);
+
+// define the axis
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+
+// add the SVG element
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", 
+          "translate(" + margin.left + "," + margin.top + ")");
+
+
+// load the data
+if (i > 2){document.getElementById("btn1").onclick = function exampleFunction(){return null;};
+};
+  var buttonClickedId = buttonElement.id;
+  if( buttonClickedId === 'btn1' && document.getElementById('Bar').checked && (i<2)) {
+d3.csv("stocks.csv", function(error, data) {
+
+    data.forEach(function(d) {
+        d.page = d.page;
+        d.milisec = +d.milisec;
+                
+    });
+	
+  // scale the range of the data
+  x.domain(data.map(function(d) { return d.page; }));
+  y.domain([0, d3.max(data, function(d) { return d.milisec; })]);
+
+  // add axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)" );
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+
+  // Add bar chart
+  svg.selectAll("rect")
+      .data(data)
+      .enter()
+      .append( 'svg:rect' )
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.page); })
+      .attr("width", x.rangeBand())
+      .attr("y", height)
+      .attr("height", 0)
+      .transition()
+        .duration(1000)
+        .attr("x",function(d){return x(d.page);})
+        .attr("y",function(d){return y(d.milisec);})
+        .attr("height",function(d){return height - y(d.milisec);})
+        .attr("width",x.rangeBand());
+      
+      
+
+});
+i++;
+
+}
+
+  else if( buttonClickedId === 'btn2'&& document.getElementById('Bar').checked ){
+d3.csv("stocks.csv", function(error, data) {
+
+    data.forEach(function(d) {
+        d.page = d.page;
+        d.milisec = +d.milisec;
+                
+    });
+	
+  // scale the range of the data
+  x.domain(data.map(function(d) { return d.date; }));
+  y.domain([0, d3.max(data, function(d) { return d.milisec; })]);
+
+  // add axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)" );
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+   
+}
+col=getRandomColor();
+    alert (col);
+  // Add bar chart
+  svg.selectAll("rect")
+      .data(data)
+      .enter()
+      .append( 'svg:rect' )
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("width", x.rangeBand())
+      .attr("y", height)
+      .attr("height", 0)
+      .transition()
+        .duration(1000)
+        .attr("x",function(d){return x(d.date);})
+        .attr("y",function(d){return y(d.milisec);})
+        .attr("height",function(d){return height - y(d.milisec);})
+        .attr("width",x.rangeBand());   
+});
+}
+ if( buttonClickedId === 'btn1'&& document.getElementById('Pie').checked&& (i<2) ){
+          d3.text("stocks.csv", function (data) {
+                var parsedCSV = d3.csv.parseRows(data);
+
+                var container = d3.select("body")
+                        .append("table")
+
+                        .selectAll("tr")
+                        .data(parsedCSV).enter()
+                        .append("tr")
+
+                        .selectAll("td")
+                        .data(function (d) {
+                            return d;
+                        }).enter()
+                        .append("td")
+                        .text(function (d) {
+                            return d;
+                        });
+            });
+       i++;
+
+    }
+};
+</script>
+<script type="text/javascript" charset="utf-8">
+    var i=0;
+    function whichButton2(buttonElement){
+          
+          d3.text("stocks.csv", function (data) {
+                var parsedCSV = d3.csv.parseRows(data);
+
+                var container = d3.select("body")
+                        .append("table")
+
+                        .selectAll("tr")
+                        .data(parsedCSV).enter()
+                        .append("tr")
+
+                        .selectAll("td")
+                        .data(function (d) {
+                            return d;
+                        }).enter()
+                        .append("td")
+                        .text(function (d) {
+                            return d;
+                        });
+            });
+        
+
+    };
+        </script><!--
+<script src="//d3js.org/d3.v3.min.js"></script>
+      
+<script>
+
+// Define the margin, radius, and color scale. Colors are assigned lazily, so
+// if you want deterministic behavior, define a domain for the color scale.
+var m = 10,
+    r = 100,
+    z = d3.scale.category10();
+
+// Define a pie layout: the pie angle encodes the count of flights. Since our
+// data is stored in CSV, the counts are strings which we coerce to numbers.
+var pie = d3.layout.pie()
+    .value(function(d) { return +d.milisec; })
+    .sort(function(a, b) { return b.milisec - a.milisec; });
+
+// Define an arc generator. Note the radius is specified here, not the layout.
+var arc = d3.svg.arc()
+    .innerRadius(r / 2)
+    .outerRadius(r);
+
+// Load the flight data asynchronously.
+d3.csv("stocks.csv", function(error, flights) {
+  if (error) throw error;
+
+  // Nest the flight data by originating airport. Our data has the counts per
+  // airport and carrier, but we want to group counts by aiport.
+  var airports = d3.nest()
+      .key(function(d) { return d.page; })
+      .entries(flights);
+alert(JSON.stringify(airports));
+  // Insert an svg element (with margin) for each airport in our dataset. A
+  // child g element translates the origin to the pie center.
+  var svg = d3.select("body").selectAll("div")
+      .data(airports)
+    .enter().append("div") // http://code.google.com/p/chromium/issues/detail?id=98951
+      .style("display", "inline-block")
+      .style("width", (r + m) * 2 + "px")
+      .style("height", (r + m) * 2 + "px")
+    .append("svg")
+      .attr("width", (r + m) * 2)
+      .attr("height", (r + m) * 2)
+    .append("g")
+      .attr("transform", "translate(" + (r + m) + "," + (r + m) + ")");
+
+  // Add a label for the airport. The `key` comes from the nest operator.
+  svg.append("text")
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle")
+      .text(function(d) { return d.key; });
+
+  // Pass the nested per-airport values to the pie layout. The layout computes
+  // the angles for each arc. Another g element will hold the arc and its label.
+  var g = svg.selectAll("g")
+      .data(function(d) { return pie(d.values); })
+    .enter().append("g");
+
+  // Add a colored arc path, with a mouseover title showing the count.
+  g.append("path")
+      .attr("d", arc)
+      .style("fill", function(d) { return z(d.data.date); })
+    .append("title")
+      .text(function(d) { return d.data.date + ": " + d.data.milisec; });
+
+  // Add a label to the larger arcs, translated to the arc centroid and rotated.
+  g.filter(function(d) { return d.endAngle - d.startAngle > .2; }).append("text")
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle")
+      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")rotate(" + angle(d) + ")"; })
+      .text(function(d) { return d.data.date; });
+
+  // Computes the label angle of an arc, converting from radians to degrees.
+  function angle(d) {
+    var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
+    return a > 90 ? a - 180 : a;
+  }
+});
+
+</script>-->
+<script src="//d3js.org/d3.v3.min.js"></script>
+<div id="area1"></div>
+<script>
+function whichButton3(buttonElement){
+var width1 = 960,
+    height1 = 500,
+    radius1 = Math.min(width1, height1) / 2;
+
+var color = d3.scale.category20();
+
+var arc = d3.svg.arc()
+    .outerRadius(radius1 - 100)
+    .innerRadius(0);
+
+var labelArc = d3.svg.arc()
+    .outerRadius(radius1 - 40)
+    .innerRadius(radius1 - 40);
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.values.milisec; });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width1)
+    .attr("height", height1)
+    .append("g")
+    .attr("transform", "translate(" + width1 / 3 + "," + height1 / 3 + ")");
+
+d3.csv("stocks.csv", type, function(error, data) {
+  if (error) throw error;
+data = d3.nest()
+    .key(function(d){ return d.date; }) // `GROUP BY date`
+    .rollup(function(values){
+      // `values` is all the rows of a particular date
+      var counts = {}, keys = ['milisec'];
+      keys.forEach(function(key){
+        counts[key] = d3.sum(values, function(d){ return d[key]; });
+      });
+      return counts;
+    })
+    .entries(data);
+   alert(JSON.stringify(data));
+   var svgContainer = d3.select("body").append("svg")
+                                       .attr("width", 500)
+                                       .attr("height", 500)
+                                       .style("border", "1px solid black");
+ 
+  var g = svgContainer.selectAll(".arc")
+      .data(pie(data))
+      .enter().append("g")
+      .attr("class", "arc");
+   
+  g.append("path")
+      .attr("d", arc)
+      .style("fill", function(d) { return color(d.data.key); })
+      .attr("transform", "translate(250,250)");
+
+  g.append("text")
+      .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) { return d.data.key; });
+});
+
+function type(d) {
+  d.milisec = +d.milisec;
+  return d;
+}
+}
+</script>
+<p></p>
+<div id="area2"></div>
+<script>
+function whichButton4(buttonElement){
+var width = 960,
+    height = 500,
+    radius = Math.min(width, height) / 2;
+
+var color = d3.scale.category20();
+
+var arc = d3.svg.arc()
+    .outerRadius(radius - 100)
+    .innerRadius(0);
+
+var labelArc = d3.svg.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.values.milisec; });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+d3.csv("stocks.csv", type, function(error, data) {
+  if (error) throw error;
+data = d3.nest()
+    .key(function(d){ return d.page; }) // `GROUP BY date`
+    .rollup(function(values){
+      // `values` is all the rows of a particular date
+      var counts = {}, keys = ['milisec'];
+      keys.forEach(function(key){
+        counts[key] = d3.sum(values, function(d){ return d[key]; });
+      });
+      return counts;
+    })
+    .entries(data);
+   alert(JSON.stringify(data));
+  var g = svg.selectAll(".arc")
+      .data(pie(data))
+      .enter().append("g")
+      .attr("class", "arc");
+
+  g.append("path")
+      .attr("d", arc)
+      .style("fill", function(d) { return color(d.data.key); })
+      .attr("x", "100").attr("y", "103");
+
+  g.append("text")
+      .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) { return d.data.key; });
+});
+
+function type(d) {
+  d.milisec = +d.milisec;
+  return d;
+}
+}
+</script>
+<!--
+<button onclick="render('ascending')">Sort ascending!</button>
+<button onclick="render('descending')">Sort descending!</button>
+-->
+<input type="radio" name="programType" id="Pie" value="Pro" /> Pie Chart<br/> 
+<input type="radio" name="programType" id="Bar" value="Basic" checked /> Bar<br/>
+
+<button id="btn1"  onclick="whichButton(this); this.onclick=null;">Par pages</button><br/>
+<button id="btn2" onclick="whichButton(this); this.onclick=null;">Par jours</button><br/>
+<button id="btn3" onclick="whichButton2(this); this.onclick=null;">Tableau</button><br/>
+<button id="btn4" onclick="whichButton3(this); this.onclick=null;">Pie</button><br/>
+<button id="btn5" onclick="whichButton4(this); this.onclick=null;">Pie 2</button><br/>
+
+    </body>
+</html>
